@@ -84,13 +84,12 @@ if uploaded_file is not None:
     df_filtered = df[df['ano'] == selected_year]
     
     # Intervalo de Confiança para estatísticas de gols por jogador
-    st.subheader("Intervalo de Confiança - Gols por Jogador")
     gols_jogadores = df_filtered.groupby("player_name")["statistics_goals"].sum().dropna()
     mean_gols = np.mean(gols_jogadores)
     conf_int = stats.t.interval(0.95, len(gols_jogadores)-1, loc=mean_gols, scale=stats.sem(gols_jogadores))
     
-    st.write(f"Média de gols por jogador: {mean_gols:.2f}")
-    st.write(f"Intervalo de confiança 95%: ({conf_int[0]:.2f}, {conf_int[1]:.2f})")
+    st.subheader(f"Média de gols por jogador: {mean_gols:.2f}")
+    st.subheader(f"Intervalo de confiança 95%: ({conf_int[0]:.2f}, {conf_int[1]:.2f})")
     
     # Melhores e piores jogadores
     st.subheader("Destaques - Melhores e Piores Jogadores")
