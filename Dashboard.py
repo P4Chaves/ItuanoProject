@@ -7,6 +7,9 @@ import scipy.stats as stats
 # Configuração da página
 st.set_page_config(page_title="Desempenho Esportivo - Ituano", layout="wide")
 
+# Exibir logo do Ituano
+st.image("ItuanoFC.png", width=400)
+
 # Título e Introdução
 st.title("Análise de Desempenho Esportivo - Ituano")
 
@@ -26,6 +29,8 @@ Dessa forma, vamos investigar:
 Além do foco nos jogadores, também podemos observar se a equipe como um todo tem melhorado, piorado ou mantido um desempenho estável. 
 
 Fatores que podem influenciar essa performance incluem mudanças na escalação, novas contratações, alterações táticas e até mesmo aspectos físicos e psicológicos dos jogadores. 
+
+**Melhoria, Piora ou Estagnação:** Os dados irão indicar se houve um progresso contínuo ou se o time tem enfrentado dificuldades ofensivas em algumas temporadas específicas. Essa informação pode ser crucial para treinadores e gestores do clube.
 
 ### Perguntas Investigativas
 Com base nisso, nossa análise busca responder:
@@ -66,7 +71,7 @@ if uploaded_file is not None:
     
     # Intervalo de Confiança para estatísticas de gols por jogador
     st.subheader("Intervalo de Confiança - Gols por Jogador")
-    gols_jogadores = df_filtered.groupby("nome_jogador")["statistics_goals"].sum().dropna()
+    gols_jogadores = df_filtered.groupby("player_name")["statistics_goals"].sum().dropna()
     mean_gols = np.mean(gols_jogadores)
     conf_int = stats.t.interval(0.95, len(gols_jogadores)-1, loc=mean_gols, scale=stats.sem(gols_jogadores))
     
@@ -97,9 +102,14 @@ if uploaded_file is not None:
     st.plotly_chart(hist_fig)
     
     # Conclusão e interpretação
-    st.subheader("Interpretação dos Resultados")
+    st.subheader("Conclusões da Análise")
     st.markdown("""
-    - A análise de intervalos de confiança ajuda a entender a variabilidade do desempenho dos jogadores.
-    - O gráfico de artilheiros destaca os jogadores com maior impacto ofensivo.
-    - A distribuição de gols permite avaliar a consistência dos jogadores ao longo do tempo.
+    Com base nos dados analisados, podemos tirar algumas conclusões importantes sobre o desempenho dos jogadores do Ituano ao longo dos anos.
+    
+    - **Melhores Jogadores:** O Ituano tem alguns jogadores que consistentemente se destacam como artilheiros. Esses atletas são fundamentais para o sucesso ofensivo da equipe.
+                
+    - **Variação no Desempenho:** A análise demonstrou que 2022 foi o melhor ano para o Ituano no quesito gols e poder ofensivo, mas as seguintes temporadas mostram que seu desempenho nesse quesito só caiu.
+                
+    - **Dependência de Jogadores:** Em muitas temporadas, o Ituano depende de poucos jogadores para marcar gols, o que pode ser um risco caso esses atletas sofram lesões ou tenham uma queda de rendimento.
+    
     """)
