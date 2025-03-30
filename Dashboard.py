@@ -9,9 +9,25 @@ st.set_page_config(page_title="Desempenho Esportivo - Ituano", layout="wide")
 
 # Título e Introdução
 st.title("Análise de Desempenho Esportivo - Ituano")
+
+# Análise detalhada antes do upload do CSV
+st.header("Descrição do Problema e Contexto do Mercado")
 st.markdown("""
-Esta dashboard tem como objetivo analisar o desempenho esportivo dos jogadores do Ituano, 
-utilizando dados de jogos para identificar padrões e insights.
+O desempenho esportivo de um clube de futebol é um fator determinante para sua competitividade, crescimento e posicionamento no cenário nacional e internacional. 
+Neste estudo, analisamos os dados do Ituano para compreender a evolução do desempenho da equipe ao longo dos anos. A análise estatística dos gols marcados por jogador nos permite avaliar se houve uma melhora, uma piora ou uma estagnação no rendimento ofensivo do time.
+
+Fatores que podem influenciar essa performance incluem mudanças na escalação, novas contratações, alterações táticas e até mesmo aspectos físicos e psicológicos dos jogadores. 
+Portanto, esta análise será conduzida considerando tanto os dados individuais dos jogadores quanto o impacto coletivo sobre o desempenho do Ituano como equipe.
+
+As principais perguntas que esta investigação busca responder são:
+- O Ituano tem melhorado sua performance ofensiva ao longo dos anos?
+- Os gols marcados estão distribuídos de forma equilibrada entre os jogadores ou dependem de poucos artilheiros?
+- Existe uma variação significativa no desempenho dos jogadores entre temporadas?
+- O Ituano possui jogadores consistentes que se destacam regularmente?
+- Quais jogadores apresentam o melhor aproveitamento ofensivo?
+- Como a equipe pode otimizar seu desempenho com base nos dados analisados?
+
+Agora, carregue o arquivo CSV contendo os dados para que possamos aprofundar essa investigação com análises estatísticas e gráficos detalhados.
 """)
 
 # Carregar os dados
