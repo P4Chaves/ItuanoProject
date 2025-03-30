@@ -35,38 +35,47 @@ if uploaded_file is not None:
     - Qual a relação entre finalizações e gols marcados?
     """)
     
-    # Layout da Dashboard
-    st.sidebar.header("Filtros")
-    selected_year = st.sidebar.selectbox("Selecione o Ano", df['ano'].unique())
+    # Filtro de seleção de ano dentro da página
+    st.subheader("Seleção de Ano")
+    selected_year = st.selectbox("Selecione o Ano", df['ano'].unique())
     df_filtered = df[df['ano'] == selected_year]
     
-    # Intervalo de Confiança para estatísticas de gols
-    st.subheader("Intervalo de Confiança - Gols Marcados")
-    gols = df_filtered['home_score'].dropna()
-    mean_gols = np.mean(gols)
-    conf_int = stats.t.interval(0.95, len(gols)-1, loc=mean_gols, scale=stats.sem(gols))
+    # Intervalo de Confiança para estatísticas de gols por jogador
+    st.subheader("Intervalo de Confiança - Gols por Jogador")
+    gols_jogadores = df_filtered.groupby("player_name")["statistics_goals"].sum().dropna()
+    mean_gols = np.mean(gols_jogadores)
+    conf_int = stats.t.interval(0.95, len(gols_jogadores)-1, loc=mean_gols, scale=stats.sem(gols_jogadores))
     
-    st.write(f"Média de gols: {mean_gols:.2f}")
+    st.write(f"Média de gols por jogador: {mean_gols:.2f}")
     st.write(f"Intervalo de confiança 95%: ({conf_int[0]:.2f}, {conf_int[1]:.2f})")
+    
+    # Melhores e piores jogadores
+    st.subheader("Destaques - Melhores e Piores Jogadores")
+    melhores = gols_jogadores.nlargest(5)
+    piores = gols_jogadores.nsmallest(5)
+    
+    st.write("**Top 5 Artilheiros:**")
+    st.dataframe(melhores)
+    
+    st.write("**Jogadores com Menos Gols:**")
+    st.dataframe(piores)
     
     # Gráficos de análise
     st.subheader("Visualizações de Dados")
     
-    # Gráfico de dispersão entre finalizações e gols
-    if 'statistics_total_shots' in df_filtered.columns:
-        scatter_fig = px.scatter(df_filtered, x='statistics_total_shots', y='home_score', 
-                                 title="Relação entre Finalizações e Gols", 
-                                 labels={"statistics_total_shots": "Finalizações", "home_score": "Gols"})
-        st.plotly_chart(scatter_fig)
+    # Gráfico de barras dos artilheiros
+    bar_fig = px.bar(melhores, x=melhores.index, y=melhores.values, title="Top 5 Artilheiros do Ituano",
+                     labels={"x": "Jogador", "y": "Gols"})
+    st.plotly_chart(bar_fig)
     
-    # Histograma de gols marcados
-    hist_fig = px.histogram(df_filtered, x='home_score', nbins=10, title="Distribuição de Gols por Jogo")
+    # Histograma de distribuição de gols por jogador
+    hist_fig = px.histogram(gols_jogadores, nbins=10, title="Distribuição de Gols por Jogador")
     st.plotly_chart(hist_fig)
     
     # Conclusão e interpretação
-    st.subheader("Interpretação dos Resultados:")
+    st.subheader("Interpretação dos Resultados")
     st.markdown("""
-    - A análise de intervalos de confiança ajuda a entender a variabilidade do desempenho do time.
-    - O gráfico de dispersão mostra se há relação entre finalizações e gols.
-    - A distribuição de gols permite avaliar se há uma tendência nos jogos.
+    - A análise de intervalos de confiança ajuda a entender a variabilidade do desempenho dos jogadores.
+    - O gráfico de artilheiros destaca os jogadores com maior impacto ofensivo.
+    - A distribuição de gols permite avaliar a consistência dos jogadores ao longo do tempo.
     """)
