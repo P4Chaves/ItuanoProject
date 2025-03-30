@@ -1,3 +1,17 @@
+import subprocess
+import sys
+
+# Garantir que todas as dependências sejam instaladas antes de rodar o código
+def install_package(package):
+    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+
+try:
+    import plotly.express as px
+except ModuleNotFoundError:
+    install_package("plotly")
+    import plotly.express as px
+
+
 import streamlit as st
 import pandas as pd
 import numpy as np
