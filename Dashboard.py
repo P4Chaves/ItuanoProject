@@ -14,17 +14,25 @@ st.title("Análise de Desempenho Esportivo - Ituano")
 st.header("Descrição do Problema e Contexto do Mercado")
 st.markdown("""
 O desempenho esportivo de um clube de futebol é um fator determinante para sua competitividade, crescimento e posicionamento no cenário nacional e internacional. 
-Neste estudo, analisamos os dados do Ituano para compreender a evolução do desempenho da equipe ao longo dos anos. A análise estatística dos gols marcados por jogador nos permite avaliar se houve uma melhora, uma piora ou uma estagnação no rendimento ofensivo do time.
+
+Neste estudo, nosso **foco principal** é analisar a **performance individual dos jogadores** do Ituano ao longo dos anos. Queremos entender como cada atleta contribui para o sucesso ofensivo da equipe, identificando os jogadores mais eficientes e aqueles cujo desempenho pode estar abaixo do esperado.
+
+Dessa forma, vamos investigar:
+- Quais jogadores apresentam um desempenho mais consistente ao longo das temporadas?
+- Existe um padrão de artilheiros que se repete anualmente ou há muita variação?
+- O Ituano tem uma dependência excessiva de poucos jogadores para marcar gols?
+
+### Evolução do Ituano ao Longo dos Anos
+Além do foco nos jogadores, também podemos observar se a equipe como um todo tem melhorado, piorado ou mantido um desempenho estável. 
 
 Fatores que podem influenciar essa performance incluem mudanças na escalação, novas contratações, alterações táticas e até mesmo aspectos físicos e psicológicos dos jogadores. 
-Portanto, esta análise será conduzida considerando tanto os dados individuais dos jogadores quanto o impacto coletivo sobre o desempenho do Ituano como equipe.
 
-As principais perguntas que esta investigação busca responder são:
+### Perguntas Investigativas
+Com base nisso, nossa análise busca responder:
 - O Ituano tem melhorado sua performance ofensiva ao longo dos anos?
 - Os gols marcados estão distribuídos de forma equilibrada entre os jogadores ou dependem de poucos artilheiros?
 - Existe uma variação significativa no desempenho dos jogadores entre temporadas?
 - O Ituano possui jogadores consistentes que se destacam regularmente?
-- Quais jogadores apresentam o melhor aproveitamento ofensivo?
 - Como a equipe pode otimizar seu desempenho com base nos dados analisados?
 
 Agora, carregue o arquivo CSV contendo os dados para que possamos aprofundar essa investigação com análises estatísticas e gráficos detalhados.
@@ -58,7 +66,7 @@ if uploaded_file is not None:
     
     # Intervalo de Confiança para estatísticas de gols por jogador
     st.subheader("Intervalo de Confiança - Gols por Jogador")
-    gols_jogadores = df_filtered.groupby("player_name")["statistics_goals"].sum().dropna()
+    gols_jogadores = df_filtered.groupby("nome_jogador")["statistics_goals"].sum().dropna()
     mean_gols = np.mean(gols_jogadores)
     conf_int = stats.t.interval(0.95, len(gols_jogadores)-1, loc=mean_gols, scale=stats.sem(gols_jogadores))
     
