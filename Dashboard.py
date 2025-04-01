@@ -12,7 +12,6 @@ except ModuleNotFoundError:
     install_package("plotly")
     import plotly.express as px
 
-
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -58,72 +57,70 @@ Com base nisso, nossa análise busca responder:
 Agora, carregue o arquivo CSV contendo os dados para que possamos aprofundar essa investigação com análises estatísticas e gráficos detalhados.
 """)
 
-# Carregar os dados
-uploaded_file = st.file_uploader("Carregue o arquivo CSV dos jogos", type="csv")
+# Carregar o CSV automaticamente sem precisar de upload
+csv_path = "dados-completos-Ituano.csv"  # Certifique-se de que o arquivo está no mesmo diretório do código
+df = pd.read_csv(csv_path)
 
-if uploaded_file is not None:
-    df = pd.read_csv(uploaded_file)
-    
-    # Exibir uma amostra dos dados
-    st.subheader("Visualização do Dataset")
-    st.dataframe(df.head())
-    
-    # Identificar colunas numéricas para análise
-    numeric_cols = df.select_dtypes(include=np.number).columns.tolist()
-    
-    # Hipóteses e perguntas investigativas
-    st.subheader("Hipóteses e Perguntas")
-    st.markdown("""
-    - O desempenho do Ituano melhora jogando em casa?
-    - Há jogadores que se destacam consistentemente em diferentes métricas?
-    - Qual a relação entre finalizações e gols marcados?
-    """)
-    
-    # Filtro de seleção de ano dentro da página
-    st.subheader("Seleção de Ano")
-    selected_year = st.selectbox("Selecione o Ano", df['ano'].unique())
-    df_filtered = df[df['ano'] == selected_year]
-    
-    # Intervalo de Confiança para estatísticas de gols por jogador
-    gols_jogadores = df_filtered.groupby("player_name")["statistics_goals"].sum().dropna()
-    mean_gols = np.mean(gols_jogadores)
-    conf_int = stats.t.interval(0.95, len(gols_jogadores)-1, loc=mean_gols, scale=stats.sem(gols_jogadores))
-    
-    st.subheader(f"Média de gols por jogador: {mean_gols:.2f}")
-    st.subheader(f"Intervalo de confiança 95%: ({conf_int[0]:.2f}, {conf_int[1]:.2f})")
-    
-    # Melhores e piores jogadores
-    st.subheader("Destaques - Melhores e Piores Jogadores")
-    melhores = gols_jogadores.nlargest(5)
-    piores = gols_jogadores.nsmallest(5)
-    
-    st.write("**Top 5 Artilheiros:**")
-    st.dataframe(melhores)
-    
-    st.write("**Jogadores com Menos Gols:**")
-    st.dataframe(piores)
-    
-    # Gráficos de análise
-    st.subheader("Visualizações de Dados")
-    
-    # Gráfico de barras dos artilheiros
-    bar_fig = px.bar(melhores, x=melhores.index, y=melhores.values, title="Top 5 Artilheiros do Ituano",
-                     labels={"x": "Jogador", "y": "Gols"})
-    st.plotly_chart(bar_fig)
-    
-    # Histograma de distribuição de gols por jogador
-    hist_fig = px.histogram(gols_jogadores, nbins=10, title="Distribuição de Gols por Jogador")
-    st.plotly_chart(hist_fig)
-    
-    # Conclusão e interpretação
-    st.subheader("Conclusões da Análise")
-    st.markdown("""
-    Com base nos dados analisados, podemos tirar algumas conclusões importantes sobre o desempenho dos jogadores do Ituano ao longo dos anos.
-    
-    - **Melhores Jogadores:** O Ituano tem alguns jogadores que consistentemente se destacam como artilheiros. Esses atletas são fundamentais para o sucesso ofensivo da equipe.
-                
-    - **Variação no Desempenho:** A análise demonstrou que 2022 foi o melhor ano para o Ituano no quesito gols e poder ofensivo, mas as seguintes temporadas mostram que seu desempenho nesse quesito só caiu.
-                
-    - **Dependência de Jogadores:** Em muitas temporadas, o Ituano depende de poucos jogadores para marcar gols, o que pode ser um risco caso esses atletas sofram lesões ou tenham uma queda de rendimento.
-    
-    """)
+# Exibir uma amostra dos dados
+st.subheader("Visualização do Dataset")
+st.dataframe(df.head())
+
+# Identificar colunas numéricas para análise
+numeric_cols = df.select_dtypes(include=np.number).columns.tolist()
+
+# Hipóteses e perguntas investigativas
+st.subheader("Hipóteses e Perguntas")
+st.markdown("""
+- O desempenho do Ituano melhora jogando em casa?
+- Há jogadores que se destacam consistentemente em diferentes métricas?
+- Qual a relação entre finalizações e gols marcados?
+""")
+
+# Filtro de seleção de ano dentro da página
+st.subheader("Seleção de Ano")
+selected_year = st.selectbox("Selecione o Ano", df['ano'].unique())
+df_filtered = df[df['ano'] == selected_year]
+
+# Intervalo de Confiança para estatísticas de gols por jogador
+gols_jogadores = df_filtered.groupby("player_name")["statistics_goals"].sum().dropna()
+mean_gols = np.mean(gols_jogadores)
+conf_int = stats.t.interval(0.95, len(gols_jogadores)-1, loc=mean_gols, scale=stats.sem(gols_jogadores))
+
+st.subheader(f"Média de gols por jogador: {mean_gols:.2f}")
+st.subheader(f"Intervalo de confiança 95%: ({conf_int[0]:.2f}, {conf_int[1]:.2f})")
+
+# Melhores e piores jogadores
+st.subheader("Destaques - Melhores e Piores Jogadores")
+melhores = gols_jogadores.nlargest(5)
+piores = gols_jogadores.nsmallest(5)
+
+st.write("**Top 5 Artilheiros:**")
+st.dataframe(melhores)
+
+st.write("**Jogadores com Menos Gols:**")
+st.dataframe(piores)
+
+# Gráficos de análise
+st.subheader("Visualizações de Dados")
+
+# Gráfico de barras dos artilheiros
+bar_fig = px.bar(melhores, x=melhores.index, y=melhores.values, title="Top 5 Artilheiros do Ituano",
+                 labels={"x": "Jogador", "y": "Gols"})
+st.plotly_chart(bar_fig)
+
+# Histograma de distribuição de gols por jogador
+hist_fig = px.histogram(gols_jogadores, nbins=10, title="Distribuição de Gols por Jogador")
+st.plotly_chart(hist_fig)
+
+# Conclusão e interpretação
+st.subheader("Conclusões da Análise")
+st.markdown("""
+Com base nos dados analisados, podemos tirar algumas conclusões importantes sobre o desempenho dos jogadores do Ituano ao longo dos anos.
+
+- **Melhores Jogadores:** O Ituano tem alguns jogadores que consistentemente se destacam como artilheiros. Esses atletas são fundamentais para o sucesso ofensivo da equipe.
+            
+- **Variação no Desempenho:** A análise demonstrou que 2022 foi o melhor ano para o Ituano no quesito gols e poder ofensivo, mas as seguintes temporadas mostram que seu desempenho nesse quesito só caiu.
+            
+- **Dependência de Jogadores:** Em muitas temporadas, o Ituano depende de poucos jogadores para marcar gols, o que pode ser um risco caso esses atletas sofram lesões ou tenham uma queda de rendimento.
+
+""")
