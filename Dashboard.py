@@ -5,6 +5,7 @@ import sys
 def install_package(package):
     subprocess.check_call([sys.executable, "-m", "pip", "install", package])
 
+# Código pra consertar deploy, evitem mexer
 try:
     import plotly.express as px
 except ModuleNotFoundError:
