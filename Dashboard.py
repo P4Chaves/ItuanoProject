@@ -89,8 +89,20 @@ conf_int = stats.t.interval(0.95, len(gols_jogadores)-1, loc=mean_gols, scale=st
 st.subheader(f"Média de gols por jogador: {mean_gols:.2f}")
 st.subheader(f"Intervalo de confiança 95%: ({conf_int[0]:.2f}, {conf_int[1]:.2f})")
 
+# Gols por minuto jogado
+df_filtered["gols_por_minuto"] = df_filtered["statistics_goals"] / df_filtered["statistics_minutes_played"].replace(0, np.nan)
+gols_minuto = df_filtered.groupby("player_name")["gols_por_minuto"].mean().dropna()
+melhores_minuto = gols_minuto.nlargest(5)
+piores_minuto = gols_minuto.nsmallest(5)
+
+st.subheader("Eficiência: Gols por Minuto Jogado")
+st.write("**Top 5 em Gols por Minuto:**")
+st.dataframe(melhores_minuto)
+st.write("**5 com Menor Eficiência (Gols/Minuto):**")
+st.dataframe(piores_minuto)
+
 # Melhores e piores jogadores por total de gols
-st.subheader("Destaques - Melhores e Piores Jogadores")
+st.subheader("Destaques - Quantidade De Gols")
 melhores = gols_jogadores.nlargest(5)
 piores = gols_jogadores.nsmallest(5)
 
@@ -99,20 +111,6 @@ st.dataframe(melhores)
 
 st.write("**Jogadores com Menos Gols:**")
 st.dataframe(piores)
-
-# Gols por Minuto Jogado
-df_filtered["gols_por_minuto"] = df_filtered["statistics_goals"] / df_filtered["statistics_minutes_played"].replace(0, np.nan)
-gols_por_minuto = df_filtered.groupby("player_name")["gols_por_minuto"].mean().dropna()
-
-st.subheader("Eficiência Ofensiva - Gols por Minuto Jogado")
-melhores_eff = gols_por_minuto.nlargest(5)
-piores_eff = gols_por_minuto.nsmallest(5)
-
-st.write("**Top 5 Jogadores Mais Eficientes (Gols por Minuto):**")
-st.dataframe(melhores_eff)
-
-st.write("**Jogadores Menos Eficientes (Gols por Minuto):**")
-st.dataframe(piores_eff)
 
 # Gráficos de análise
 st.subheader("Visualizações de Dados")
@@ -126,16 +124,36 @@ st.plotly_chart(bar_fig)
 hist_fig = px.histogram(gols_jogadores, nbins=10, title="Distribuição de Gols por Jogador")
 st.plotly_chart(hist_fig)
 
+# Nova Análise: Eficiência de Passes
+st.subheader("Eficiência de Passes")
+df_filtered["taxa_acerto_passes"] = df_filtered["statistics_accurate_pass"] / df_filtered["statistics_total_pass"].replace(0, np.nan)
+df_filtered["passes_por_minuto"] = df_filtered["statistics_total_pass"] / df_filtered["statistics_minutes_played"].replace(0, np.nan)
+
+top_passes_certos = df_filtered.groupby("player_name")["statistics_accurate_pass"].sum().nlargest(5)
+top_taxa_acerto = df_filtered.groupby("player_name")["taxa_acerto_passes"].mean().nlargest(5)
+top_passes_minuto = df_filtered.groupby("player_name")["passes_por_minuto"].mean().nlargest(5)
+
+st.write("**Top 5 - Total de Passes Certos:**")
+st.dataframe(top_passes_certos)
+
+st.write("**Top 5 - Maior Taxa de Acerto de Passes:**")
+st.dataframe(top_taxa_acerto)
+
+st.write("**Top 5 - Passes por Minuto Jogado:**")
+st.dataframe(top_passes_minuto)
+
 # Conclusão e interpretação
 st.subheader("Conclusões da Análise")
 st.markdown("""
 Com base nos dados analisados, podemos tirar algumas conclusões importantes sobre o desempenho dos jogadores do Ituano ao longo dos anos.
 
 - **Melhores Jogadores:** O Ituano tem alguns jogadores que consistentemente se destacam como artilheiros. Esses atletas são fundamentais para o sucesso ofensivo da equipe.
-            
+
 - **Variação no Desempenho:** A análise demonstrou que 2022 foi o melhor ano para o Ituano no quesito gols e poder ofensivo, mas as seguintes temporadas mostram que seu desempenho nesse quesito só caiu.
-            
+
 - **Dependência de Jogadores:** Em muitas temporadas, o Ituano depende de poucos jogadores para marcar gols, o que pode ser um risco caso esses atletas sofram lesões ou tenham uma queda de rendimento.
 
-- **Eficiência Ofensiva:** A métrica de gols por minuto jogado nos permite observar com mais precisão quem são os jogadores mais eficazes em transformar tempo em campo em resultados concretos. Alguns atletas com poucos minutos se mostraram extremamente eficientes, enquanto outros, apesar de jogarem bastante, têm baixa conversão em gols.
+- **Eficiência de Passes:** Alguns jogadores apresentam alto volume de passes certos e alta taxa de acerto, o que mostra consistência no meio-campo. Aqueles com mais passes por minuto tendem a participar mais ativamente da construção de jogadas.
+
+Essas análises são essenciais para nortear decisões estratégicas no clube, como reforços, substituições e planejamento tático.
 """)
