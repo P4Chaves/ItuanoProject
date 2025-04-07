@@ -1,13 +1,11 @@
 import subprocess
 import sys
 import base64
-from io import BytesIO
 
 # Garantir que todas as dependências sejam instaladas antes de rodar o código
 def install_package(package):
     subprocess.check_call([sys.executable, "-m", "pip", "install", package])
 
-# Código pra consertar deploy, evitem mexer
 try:
     import plotly.express as px
 except ModuleNotFoundError:
@@ -17,31 +15,34 @@ except ModuleNotFoundError:
 import streamlit as st
 import pandas as pd
 import numpy as np
-import plotly.express as px
 import scipy.stats as stats
 
-# Configuração da página
 st.set_page_config(page_title="Desempenho Esportivo - Ituano", layout="wide")
 
-# Carregar imagem em base64 e centralizar
-with open("ItuanoFC.png", "rb") as img_file:
-    img_base64 = base64.b64encode(img_file.read()).decode()
+# Função para exibir imagem centralizada via base64
+def show_image_centered(image_path, width=400):
+    with open(image_path, "rb") as image_file:
+        encoded = base64.b64encode(image_file.read()).decode()
+        st.markdown(
+            f"""
+            <div style='text-align: center;'>
+                <img src='data:image/png;base64,{encoded}' width='{width}'/>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
-st.markdown(f"""
-    <div style='text-align: center;'>
-        <img src='data:image/png;base64,{img_base64}' width='400'>
-    </div>
-""", unsafe_allow_html=True)
+# Mostrar logo do Ituano centralizada
+show_image_centered("ItuanoFC.png", width=400)
 
-# Carregar o CSV automaticamente
+# Carregar CSV automaticamente
 csv_path = "dados-completos-Ituano.csv"
 df = pd.read_csv(csv_path)
 
-# Criar abas com tamanho maior
-abas = st.tabs(["📊 Página Inicial", "⚽ Eficiência Ofensiva", "🧾 Conclusões"])
+# Abas principais
+aba1, aba2, aba3 = st.tabs(["📊 Página Inicial", "⚽ Eficiência Ofensiva", "📌 Conclusões"])
 
-# ABA 1: Introdução
-with abas[0]:
+with aba1:
     st.title("Análise de Desempenho Esportivo - Ituano")
     st.header("Descrição do Problema e Contexto do Mercado")
     st.markdown("""
@@ -70,23 +71,21 @@ with abas[0]:
     - Como a equipe pode otimizar seu desempenho com base nos dados analisados?
     """)
 
-# ABA 2: Eficiência Ofensiva
-with abas[1]:
-    st.header("Eficiência Ofensiva por Ano")
+with aba2:
+    st.header("Eficiência Ofensiva dos Jogadores")
     st.subheader("Seleção de Ano")
     selected_year = st.selectbox("Selecione o Ano", df['ano'].unique())
     df_filtered = df[df['ano'] == selected_year]
 
-    st.subheader("Visualização do Dataset")
-    st.dataframe(df_filtered.head())
-
+    st.subheader("Média e Intervalo de Confiança de Gols")
     gols_jogadores = df_filtered.groupby("player_name")["statistics_goals"].sum().dropna()
     mean_gols = np.mean(gols_jogadores)
     conf_int = stats.t.interval(0.95, len(gols_jogadores)-1, loc=mean_gols, scale=stats.sem(gols_jogadores))
 
-    st.subheader(f"Média de gols por jogador: {mean_gols:.2f}")
-    st.subheader(f"Intervalo de confiança 95%: ({conf_int[0]:.2f}, {conf_int[1]:.2f})")
+    st.markdown(f"**Média de gols por jogador:** {mean_gols:.2f}")
+    st.markdown(f"**Intervalo de confiança (95%):** ({conf_int[0]:.2f}, {conf_int[1]:.2f})")
 
+    st.subheader("Top 5 Artilheiros e Piores Marcadores")
     melhores = gols_jogadores.nlargest(5)
     piores = gols_jogadores.nsmallest(5)
 
@@ -96,36 +95,37 @@ with abas[1]:
     st.write("**Jogadores com Menos Gols:**")
     st.dataframe(piores)
 
-    st.subheader("Gols por Minuto Jogado")
-    df_filtered = df_filtered[df_filtered["statistics_minutes_played"] > 0].copy()
-    df_filtered["gols_por_minuto"] = df_filtered["statistics_goals"] / df_filtered["statistics_minutes_played"]
+    st.subheader("Visualizações de Dados")
+    bar_fig = px.bar(melhores, x=melhores.index, y=melhores.values, title="Top 5 Artilheiros do Ituano",
+                     labels={"x": "Jogador", "y": "Gols"})
+    st.plotly_chart(bar_fig)
 
-    top_gpm = df_filtered.groupby("player_name")["gols_por_minuto"].mean().sort_values(ascending=False).head(5)
-    st.dataframe(top_gpm)
+    hist_fig = px.histogram(gols_jogadores, nbins=10, title="Distribuição de Gols por Jogador")
+    st.plotly_chart(hist_fig)
 
     st.subheader("Eficiência de Passes")
-    df_filtered["taxa_acerto"] = df_filtered["statistics_accurate_pass"] / df_filtered["statistics_total_pass"]
-    df_filtered["passes_por_minuto"] = df_filtered["statistics_accurate_pass"] / df_filtered["statistics_minutes_played"]
+    passes_df = df_filtered[df_filtered["statistics_minutes_played"] > 0].copy()
+    passes_df["pass_accuracy"] = passes_df["statistics_accurate_pass"] / passes_df["statistics_total_pass"]
+    passes_df["passes_certos_por_minuto"] = passes_df["statistics_accurate_pass"] / passes_df["statistics_minutes_played"]
 
-    top_passes = df_filtered.groupby("player_name")["statistics_accurate_pass"].sum().sort_values(ascending=False).head(5)
-    top_taxa = df_filtered.groupby("player_name")["taxa_acerto"].mean().sort_values(ascending=False).head(5)
-    top_passes_minuto = df_filtered.groupby("player_name")["passes_por_minuto"].mean().sort_values(ascending=False).head(5)
+    top_passes = passes_df.sort_values("statistics_accurate_pass", ascending=False).head(5)
+    st.markdown("**Jogadores com mais passes certos:**")
+    st.dataframe(top_passes[["player_name", "statistics_accurate_pass"]])
 
-    st.write("**Jogadores com mais passes certos:**")
-    st.dataframe(top_passes)
-    st.write("**Jogadores com maior taxa de acerto de passes:**")
-    st.dataframe(top_taxa)
-    st.write("**Jogadores com mais passes certos por minuto jogado:**")
-    st.dataframe(top_passes_minuto)
+    top_accuracy = passes_df.sort_values("pass_accuracy", ascending=False).head(5)
+    st.markdown("**Melhores taxas de acerto de passe:**")
+    st.dataframe(top_accuracy[["player_name", "pass_accuracy"]])
 
-# ABA 3: Conclusões
-with abas[2]:
+    top_por_minuto = passes_df.sort_values("passes_certos_por_minuto", ascending=False).head(5)
+    st.markdown("**Passes certos por minuto jogado:**")
+    st.dataframe(top_por_minuto[["player_name", "passes_certos_por_minuto"]])
+
+with aba3:
     st.header("Conclusões Gerais da Análise")
     st.markdown("""
-    Com base nos dados analisados ao longo dos anos, é possível obter uma visão mais clara do desempenho ofensivo dos jogadores do Ituano e entender como isso impacta nos resultados do time. Abaixo, sintetizamos as principais conclusões:
-
+    Com base nos dados analisados ao longo dos anos, é possível obter uma visão mais clara do desempenho ofensivo dos jogadores do Ituano e entender como isso impacta nos resultados do time.
+    
     ### ✅ Melhores Jogadores por Eficiência (Gols por Minuto Jogado)
-    Avaliamos os jogadores com base na métrica de gols marcados proporcionalmente aos minutos em campo. Esse indicador permite destacar atletas que, mesmo com menos tempo jogado, foram altamente produtivos.
     """)
 
     top_jogadores_ano = df[df["statistics_minutes_played"] > 0].copy()
@@ -141,12 +141,21 @@ with abas[2]:
             .sort_values("gols_por_minuto", ascending=False)
             .head(3)
         )
+
+        # Cálculo do intervalo de confiança
+        gols_min = top_ano["gols_por_minuto"].values
+        media = np.mean(gols_min)
+        intervalo = stats.t.interval(0.95, len(gols_min)-1, loc=media, scale=stats.sem(gols_min))
+
         st.markdown("**Top 3 Jogadores com Maior Eficiência Ofensiva:**")
         st.dataframe(top_ano.style.format({
             "statistics_goals": "{:.0f}",
             "statistics_minutes_played": "{:.0f}",
             "gols_por_minuto": "{:.4f}"
         }))
+
+        st.markdown(f"**Intervalo de Confiança (95%) da média de gols por minuto:** ({intervalo[0]:.4f}, {intervalo[1]:.4f})")
+        st.markdown("Esse intervalo representa a faixa em que, com 95% de confiança, se encontra a média real de gols por minuto dos 3 melhores jogadores daquele ano.")
 
     st.markdown("""
     ### 📉 Variação no Desempenho por Ano
