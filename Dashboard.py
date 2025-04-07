@@ -131,6 +131,8 @@ with aba3:
     top_jogadores_ano = df[df["statistics_minutes_played"] > 0].copy()
     top_jogadores_ano["gols_por_minuto"] = top_jogadores_ano["statistics_goals"] / top_jogadores_ano["statistics_minutes_played"]
 
+    comparacoes = []
+
     for ano in sorted(top_jogadores_ano["ano"].unique()):
         st.subheader(f"Destaques de {ano}")
         ano_df = top_jogadores_ano[top_jogadores_ano["ano"] == ano]
@@ -146,6 +148,16 @@ with aba3:
         gols_min = top_ano["gols_por_minuto"].values
         media = np.mean(gols_min)
         intervalo = stats.t.interval(0.95, len(gols_min)-1, loc=media, scale=stats.sem(gols_min))
+        amplitude = intervalo[1] - intervalo[0]
+
+        # Guarda para comparação entre os anos
+        comparacoes.append({
+            "ano": ano,
+            "media": media,
+            "limite_inferior": intervalo[0],
+            "limite_superior": intervalo[1],
+            "amplitude": amplitude
+        })
 
         st.markdown("**Top 3 Jogadores com Maior Eficiência Ofensiva:**")
         st.dataframe(top_ano.style.format({
@@ -155,23 +167,41 @@ with aba3:
         }))
 
         st.markdown(f"**Intervalo de Confiança (95%) da média de gols por minuto:** ({intervalo[0]:.4f}, {intervalo[1]:.4f})")
-        st.markdown("Esse intervalo representa a faixa em que, com 95% de confiança, se encontra a média real de gols por minuto dos 3 melhores jogadores daquele ano.")
 
+    # Comparação entre anos
+    st.markdown("""
+    ### 📊 Comparação Entre os Anos (Consistência dos Top 3 Jogadores)
+    Abaixo, comparamos a **amplitude** dos intervalos de confiança de cada ano. Quanto menor a amplitude, maior a **consistência** na eficiência ofensiva entre os Top 3 do ano.
+    """)
+
+    comparacoes_df = pd.DataFrame(comparacoes).sort_values("ano")
+    st.dataframe(comparacoes_df.style.format({
+        "media": "{:.4f}",
+        "limite_inferior": "{:.4f}",
+        "limite_superior": "{:.4f}",
+        "amplitude": "{:.4f}"
+    }))
+
+    st.markdown("""
+    Observa-se que anos com **menor amplitude** do intervalo (como 2022, por exemplo) indicam uma performance mais estável entre os melhores jogadores. Já amplitudes maiores sugerem que o time dependeu de um ou dois destaques bem acima da média dos demais, o que pode ser um risco de dependência excessiva.
+    """)
     st.markdown("""
     ### 📉 Variação no Desempenho por Ano
     - **2022**: Ano de maior destaque ofensivo, com a média de gols por jogador acima das outras temporadas. Jogadores como *Rafael Elias* e *Gabriel Barros* foram grandes protagonistas.
     - **2023**: Queda visível na produtividade ofensiva, com menos jogadores se destacando e um declínio na eficiência geral.
     - **2024**: Estagnação ofensiva, com poucos jogadores mantendo uma taxa regular de gols por minuto, o que pode indicar problemas no ataque ou esquema tático.
-
+ 
     ### ⚠️ Dependência de Poucos Jogadores
     A análise revelou que em várias temporadas o Ituano dependeu de poucos jogadores para marcar a maior parte dos gols. Essa dependência é arriscada, especialmente em caso de lesões ou transferências.
-
+ 
     ### 📈 Eficiência nos Passes
     A análise de passes mostrou que:
     - Alguns jogadores não só realizaram muitos passes certos como também mantiveram alta taxa de acerto.
     - Quando ponderado por tempo em campo, foi possível identificar jogadores com alta contribuição tática, garantindo a manutenção da posse de bola e organização ofensiva.
-
+ 
     ### 🧠 Considerações Finais
     - Jogadores com alta taxa de **gols por minuto** e **passes certos por minuto** demonstram ser mais eficientes taticamente e tecnicamente.
     - A comissão técnica pode utilizar essas métricas para decisões mais embasadas em escalações, substituições e reforços para as próximas temporadas.
     """)
+ 
+ 
