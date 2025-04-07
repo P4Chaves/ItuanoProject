@@ -89,7 +89,7 @@ conf_int = stats.t.interval(0.95, len(gols_jogadores)-1, loc=mean_gols, scale=st
 st.subheader(f"Média de gols por jogador: {mean_gols:.2f}")
 st.subheader(f"Intervalo de confiança 95%: ({conf_int[0]:.2f}, {conf_int[1]:.2f})")
 
-# Melhores e piores jogadores
+# Melhores e piores jogadores por total de gols
 st.subheader("Destaques - Melhores e Piores Jogadores")
 melhores = gols_jogadores.nlargest(5)
 piores = gols_jogadores.nsmallest(5)
@@ -99,6 +99,20 @@ st.dataframe(melhores)
 
 st.write("**Jogadores com Menos Gols:**")
 st.dataframe(piores)
+
+# Gols por Minuto Jogado
+df_filtered["gols_por_minuto"] = df_filtered["statistics_goals"] / df_filtered["statistics_minutes_played"].replace(0, np.nan)
+gols_por_minuto = df_filtered.groupby("player_name")["gols_por_minuto"].mean().dropna()
+
+st.subheader("Eficiência Ofensiva - Gols por Minuto Jogado")
+melhores_eff = gols_por_minuto.nlargest(5)
+piores_eff = gols_por_minuto.nsmallest(5)
+
+st.write("**Top 5 Jogadores Mais Eficientes (Gols por Minuto):**")
+st.dataframe(melhores_eff)
+
+st.write("**Jogadores Menos Eficientes (Gols por Minuto):**")
+st.dataframe(piores_eff)
 
 # Gráficos de análise
 st.subheader("Visualizações de Dados")
@@ -123,4 +137,5 @@ Com base nos dados analisados, podemos tirar algumas conclusões importantes sob
             
 - **Dependência de Jogadores:** Em muitas temporadas, o Ituano depende de poucos jogadores para marcar gols, o que pode ser um risco caso esses atletas sofram lesões ou tenham uma queda de rendimento.
 
+- **Eficiência Ofensiva:** A métrica de gols por minuto jogado nos permite observar com mais precisão quem são os jogadores mais eficazes em transformar tempo em campo em resultados concretos. Alguns atletas com poucos minutos se mostraram extremamente eficientes, enquanto outros, apesar de jogarem bastante, têm baixa conversão em gols.
 """)
