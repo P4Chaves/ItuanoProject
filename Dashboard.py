@@ -5,7 +5,6 @@ import sys
 def install_package(package):
     subprocess.check_call([sys.executable, "-m", "pip", "install", package])
 
-# Código pra consertar deploy, evitem mexer
 try:
     import plotly.express as px
 except ModuleNotFoundError:
@@ -21,21 +20,38 @@ import scipy.stats as stats
 # Configuração da página
 st.set_page_config(page_title="Desempenho Esportivo - Ituano", layout="wide")
 
-# Exibir logo do Ituano
-st.image("ItuanoFC.png", width=400)
+# Estilo customizado para centralizar imagem e aumentar abas
+st.markdown("""
+    <style>
+    .centered-image img {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .stTabs [data-baseweb="tab"] {
+        font-size: 20px;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-# Tabs de navegação
-aba_inicial, aba_eficiencia = st.tabs(["Inicial", "Eficiência Ofensiva"])
-
-# Carregar o CSV automaticamente sem precisar de upload
-csv_path = "dados-completos-Ituano.csv"  # Certifique-se de que o arquivo está no mesmo diretório do código
+# Carregar o CSV automaticamente
+csv_path = "dados-completos-Ituano.csv"
 df = pd.read_csv(csv_path)
 
-with aba_inicial:
+# Interface com abas
+aba = st.tabs(["Inicial", "Eficiência Ofensiva", "Conclusões"])
+
+with aba[0]:
+    # Exibir logo do Ituano centralizada
+    # Tentativa de centralização
+    st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
+    st.image("ItuanoFC.png", width=400)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+
     # Título e Introdução
     st.title("Análise de Desempenho Esportivo - Ituano")
 
-    # Análise detalhada antes do upload do CSV
     st.header("Descrição do Problema e Contexto do Mercado")
     st.markdown("""
     O desempenho esportivo de um clube de futebol é um fator determinante para sua competitividade, crescimento e posicionamento no cenário nacional e internacional. 
@@ -63,12 +79,10 @@ with aba_inicial:
     - Como a equipe pode otimizar seu desempenho com base nos dados analisados?
     """)
 
-with aba_eficiencia:
-    # Exibir uma amostra dos dados
+with aba[1]:
     st.subheader("Visualização do Dataset")
     st.dataframe(df.head())
 
-    # Hipóteses e perguntas investigativas
     st.subheader("Hipóteses e Perguntas")
     st.markdown("""
     - O desempenho do Ituano melhora jogando em casa?
@@ -76,67 +90,55 @@ with aba_eficiencia:
     - Qual a relação entre finalizações e gols marcados?
     """)
 
-    # Filtro de seleção de ano dentro da página
     st.subheader("Seleção de Ano")
     selected_year = st.selectbox("Selecione o Ano", df['ano'].unique())
     df_filtered = df[df['ano'] == selected_year]
 
     # Intervalo de Confiança para estatísticas de gols por jogador
     gols_jogadores = df_filtered.groupby("player_name")["statistics_goals"].sum().dropna()
-    minutos_jogados = df_filtered.groupby("player_name")["statistics_minutes_played"].sum().dropna()
+    mean_gols = np.mean(gols_jogadores)
+    conf_int = stats.t.interval(0.95, len(gols_jogadores)-1, loc=mean_gols, scale=stats.sem(gols_jogadores))
 
-    gols_por_minuto = (gols_jogadores / minutos_jogados).dropna()
-    gols_por_minuto = gols_por_minuto[gols_por_minuto != np.inf]
+    st.subheader(f"Média de gols por jogador: {mean_gols:.2f}")
+    st.subheader(f"Intervalo de confiança 95%: ({conf_int[0]:.2f}, {conf_int[1]:.2f})")
 
-    mean_gpm = np.mean(gols_por_minuto)
-    conf_int_gpm = stats.t.interval(0.95, len(gols_por_minuto)-1, loc=mean_gpm, scale=stats.sem(gols_por_minuto))
+    melhores = gols_jogadores.nlargest(5)
+    piores = gols_jogadores.nsmallest(5)
 
-    st.subheader(f"Média de gols por minuto jogado: {mean_gpm:.4f}")
-    st.subheader(f"Intervalo de confiança 95%: ({conf_int_gpm[0]:.4f}, {conf_int_gpm[1]:.4f})")
-
-    # Melhores e piores jogadores
-    st.subheader("Destaques - Melhores e Piores Jogadores em Gols por Minuto")
-    melhores = gols_por_minuto.nlargest(5)
-    piores = gols_por_minuto.nsmallest(5)
-
-    st.write("**Top 5 em Gols por Minuto:**")
+    st.subheader("Destaques - Melhores e Piores Jogadores")
+    st.write("**Top 5 Artilheiros:**")
     st.dataframe(melhores)
-
-    st.write("**5 Jogadores com Menor Eficiência:**")
+    st.write("**Jogadores com Menos Gols:**")
     st.dataframe(piores)
 
-    # Gráficos de análise
-    st.subheader("Visualizações de Dados")
+    # Gols por minuto jogado
+    df_filtered['gols_por_minuto'] = df_filtered['statistics_goals'] / df_filtered['statistics_minutes_played'].replace(0, np.nan)
+    eficiencia = df_filtered.groupby("player_name")["gols_por_minuto"].mean().dropna().sort_values(ascending=False)
 
-    # Gráfico de barras dos mais eficientes em gols por minuto
-    bar_fig_gpm = px.bar(melhores, x=melhores.index, y=melhores.values, title="Top 5 Jogadores Mais Eficientes (Gols por Minuto)",
-                         labels={"x": "Jogador", "y": "Gols por Minuto"})
-    st.plotly_chart(bar_fig_gpm)
+    st.subheader("Gols por Minuto Jogado")
+    st.dataframe(eficiencia.head(10))
 
-    # Histograma de distribuição
-    hist_fig_gpm = px.histogram(gols_por_minuto, nbins=10, title="Distribuição - Gols por Minuto")
-    st.plotly_chart(hist_fig_gpm)
+    # Passes certos e eficiência de passe
+    df_filtered['taxa_acerto_passe'] = df_filtered['statistics_accurate_pass'] / df_filtered['statistics_total_pass'].replace(0, np.nan)
+    jogadores_passes = df_filtered.groupby("player_name").agg({
+        "statistics_accurate_pass": "sum",
+        "statistics_total_pass": "sum",
+        "statistics_minutes_played": "sum"
+    })
+    jogadores_passes['eficiencia_passes'] = jogadores_passes['statistics_accurate_pass'] / jogadores_passes['statistics_total_pass']
+    jogadores_passes['passes_por_minuto'] = jogadores_passes['statistics_total_pass'] / jogadores_passes['statistics_minutes_played'].replace(0, np.nan)
 
-    # Eficiência de passes
     st.subheader("Eficiência de Passes")
-    df_filtered["taxa_acerto"] = df_filtered["statistics_accurate_pass"] / df_filtered["statistics_total_pass"]
-    df_filtered["passes_por_minuto"] = df_filtered["statistics_total_pass"] / df_filtered["statistics_minutes_played"]
+    st.dataframe(jogadores_passes.sort_values(by="statistics_accurate_pass", ascending=False).head(10))
 
-    top_passes_certos = df_filtered.groupby("player_name")["statistics_accurate_pass"].sum().nlargest(5)
-    top_taxa_acerto = df_filtered.groupby("player_name")["taxa_acerto"].mean().nlargest(5)
-    top_passes_minuto = df_filtered.groupby("player_name")["passes_por_minuto"].mean().nlargest(5)
+    st.subheader("Taxa de Acerto de Passe (%)")
+    st.dataframe(jogadores_passes.sort_values(by="eficiencia_passes", ascending=False)[["eficiencia_passes"]].head(10))
 
-    st.write("**Top 5 Jogadores com Mais Passes Certos:**")
-    st.dataframe(top_passes_certos)
+    st.subheader("Jogadores com Mais Passes por Minuto em Campo")
+    st.dataframe(jogadores_passes.sort_values(by="passes_por_minuto", ascending=False)[["passes_por_minuto"]].head(10))
 
-    st.write("**Top 5 Jogadores com Maior Taxa de Acerto de Passes:**")
-    st.dataframe(top_taxa_acerto)
-
-    st.write("**Top 5 Jogadores com Mais Passes por Minuto:**")
-    st.dataframe(top_passes_minuto)
-
-    # Conclusão e interpretação
-    st.subheader("Conclusões da Análise")
+with aba[2]:
+    st.header("Conclusões da Análise")
     st.markdown("""
     Com base nos dados analisados, podemos tirar algumas conclusões importantes sobre o desempenho dos jogadores do Ituano ao longo dos anos.
 
