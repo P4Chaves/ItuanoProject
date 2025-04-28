@@ -168,6 +168,24 @@ with aba3:
 
         st.markdown(f"**Intervalo de Confiança (95%) da média de gols por minuto:** ({intervalo[0]:.4f}, {intervalo[1]:.4f})")
 
+        # Interpretação prática aplicada
+        if ano == 2022:
+            st.markdown(f"""
+            Com esse intervalo, espera-se que, a cada minuto jogado pelos três principais atacantes de 2022, a média de gols esteja entre {intervalo[0]:.4f} e {intervalo[1]:.4f}. Isso significa que, se cada um atuasse 90 minutos, o time poderia contar com algo entre **{intervalo[0]*90:.2f} e {intervalo[1]*90:.2f} gols por jogo** só com eles. Essa margem relativamente estreita indica que o ataque funcionou de forma consistente entre os principais jogadores.
+            """)
+        elif ano == 2023:
+            st.markdown(f"""
+            O intervalo calculado aponta que, por minuto, os destaques de 2023 variaram de {intervalo[0]:.4f} a {intervalo[1]:.4f} gols. Se convertêssemos isso para 90 minutos, daria entre **{intervalo[0]*90:.2f} e {intervalo[1]*90:.2f} gols por jogo**, mostrando uma oscilação significativa e um ataque menos confiável. O time ficou mais dependente de um ou dois nomes, com diferença de rendimento expressiva.
+            """)
+        elif ano == 2024:
+            st.markdown(f"""
+            Para 2024, a eficiência ofensiva variou de {intervalo[0]:.4f} a {intervalo[1]:.4f} gols por minuto, equivalente a **{intervalo[0]*90:.2f} a {intervalo[1]*90:.2f} gols a cada 90 minutos**. A amplitude ampla demonstra uma instabilidade ofensiva maior, com jogadores em níveis bem diferentes de desempenho e um ataque com dificuldade de manter padrão de produtividade.
+            """)
+        elif ano == 2025:
+            st.markdown(f"""
+            Os números de 2025 sugerem um cenário mais controlado, com uma faixa de {intervalo[0]:.4f} a {intervalo[1]:.4f} gols por minuto — ou entre **{intervalo[0]*90:.2f} e {intervalo[1]*90:.2f} gols por jogo** para os destaques. A diferença entre o melhor e o pior desempenho diminuiu em relação a 2023 e 2024, indicando melhora na distribuição de gols e menor risco de dependência extrema.
+            """)
+
     # Comparação entre anos
     st.markdown("""
     ### 📊 Comparação Entre os Anos (Consistência dos Top 3 Jogadores)
@@ -203,5 +221,3 @@ with aba3:
     - Jogadores com alta taxa de **gols por minuto** e **passes certos por minuto** demonstram ser mais eficientes taticamente e tecnicamente.
     - A comissão técnica pode utilizar essas métricas para decisões mais embasadas em escalações, substituições e reforços para as próximas temporadas.
     """)
- 
- 
