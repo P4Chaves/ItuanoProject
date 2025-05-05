@@ -142,6 +142,19 @@ with aba2:
 
     st.plotly_chart(fig_box1)
 
+    # Interpretação do primeiro teste
+    st.markdown("""
+    **Teste realizado:** Teste t para duas amostras independentes (Welch’s t-test)
+
+    **Hipóteses**
+    - **H₀:** As médias de gols por minuto dos Top 3 jogadores de 2022 e 2023 são iguais.
+    - **H₁:** As médias são diferentes.
+
+    **Interpretação:** O boxplot exibe a variação das médias de gols por minuto por jogador. O valor de p indica se a diferença entre os anos é estatisticamente significativa:
+    - Se p < 0.05 → existe diferença significativa.
+    - Se p ≥ 0.05 → não há diferença estatística.
+    """)
+
     if p_value < 0.05:
         st.markdown("✅ Como o valor de p é menor que 0.05, **rejeitamos a hipótese nula**. Há evidências de que a média de gols por minuto dos Top 3 de 2022 é diferente da de 2023.")
     else:
@@ -165,33 +178,19 @@ with aba2:
 
     st.plotly_chart(fig_box2)
 
-    if p_value2 < 0.05:
-        st.markdown("✅ Como o valor de p é menor que 0.05, **rejeitamos a hipótese nula**. Há evidências de que a proporção média de passes certos dos Top 3 de 2022 é diferente da de 2024.")
-    else:
-        st.markdown("⚠️ Como o valor de p é maior que 0.05, **não rejeitamos a hipótese nula**. Não há evidências de diferença significativa nas proporções de passes certos entre 2022 e 2024.")
+    # Interpretação do segundo teste
+    st.markdown("""
+    **Teste realizado:** Teste t para duas amostras independentes (Welch’s t-test)
 
-        st.markdown("""
-        ---
-        ### 📊 Testes de Hipótese
+    **Hipóteses**
+    - **H₀:** As proporções médias de passes certos dos Top 3 jogadores de 2022 e 2024 são iguais.
+    - **H₁:** As proporções são diferentes.
 
-        #### Comparação da média de gols por minuto (Top 3 — 2022 vs 2023)
-        - **H₀:** As médias de gols por minuto dos Top 3 jogadores de 2022 e 2023 são iguais.
-        - **H₁:** As médias são diferentes.
+    **Interpretação:** O boxplot mostra a variação da precisão de passe entre os anos. O valor de p indica a significância da diferença. Caso o p-value retorne nan, isso ocorre porque:
+    - As amostras têm valores idênticos ou muito próximos, sem variabilidade suficiente para o teste estatístico.
+    - Ou não há dados suficientes para calcular.
+    """)
 
-        **Interpretação:** O boxplot exibe a variação das médias de gols por minuto por jogador. O valor de p indica se a diferença entre os anos é estatisticamente significativa:
-        - Se p < 0.05 → existe diferença significativa.
-        - Se p ≥ 0.05 → não há diferença estatística.
-
-        #### Comparação da proporção de passes certos (Top 3 — 2022 vs 2024)
-        - **H₀:** As proporções de passes certos dos Top 3 jogadores de 2022 e 2024 são iguais.
-        - **H₁:** As proporções são diferentes.
-
-        **Interpretação:** O boxplot mostra a variação da precisão de passe entre os anos. O valor de p indica a significância da diferença. Caso o p-value retorne `nan`, isso ocorre porque:
-        - As amostras têm valores idênticos ou muito próximos, sem variabilidade suficiente para o teste estatístico.
-        - Ou não há dados suficientes para calcular.
-
-        É importante revisar os dados disponíveis para validar a execução do teste corretamente.
-        """)
 
 with aba3:
     st.header("Conclusões Gerais da Análise")
