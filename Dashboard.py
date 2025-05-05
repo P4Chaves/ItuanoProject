@@ -120,6 +120,79 @@ with aba2:
     st.markdown("**Passes certos por minuto jogado:**")
     st.dataframe(top_por_minuto[["player_name", "passes_certos_por_minuto"]])
 
+    # NOVA SEÇÃO — Testes de Hipótese
+    st.header("📊 Testes de Hipótese Estatística")
+
+    # Hipótese 1: Média de gols por minuto dos Top 3 de 2022 vs 2023
+    st.subheader("Comparação: Média de Gols por Minuto (Top 3 - 2022 x 2023)")
+
+    df_gpm = df[df["statistics_minutes_played"] > 0].copy()
+    df_gpm["gols_por_minuto"] = df_gpm["statistics_goals"] / df_gpm["statistics_minutes_played"]
+
+    top_2022 = df_gpm[df_gpm["ano"] == 2022].groupby("player_name")["gols_por_minuto"].mean().nlargest(3)
+    top_2023 = df_gpm[df_gpm["ano"] == 2023].groupby("player_name")["gols_por_minuto"].mean().nlargest(3)
+
+    t_stat, p_value = stats.ttest_ind(top_2022, top_2023, equal_var=False)
+
+    st.markdown(f"**Valor de p:** {p_value:.4f}")
+
+    fig_box1 = px.box(df_gpm[df_gpm["ano"].isin([2022, 2023])],
+                      x="ano", y="gols_por_minuto",
+                      title="Distribuição de Gols por Minuto (2022 x 2023)")
+
+    st.plotly_chart(fig_box1)
+
+    if p_value < 0.05:
+        st.markdown("✅ Como o valor de p é menor que 0.05, **rejeitamos a hipótese nula**. Há evidências de que a média de gols por minuto dos Top 3 de 2022 é diferente da de 2023.")
+    else:
+        st.markdown("⚠️ Como o valor de p é maior que 0.05, **não rejeitamos a hipótese nula**. Não há evidências de diferença significativa entre as médias de gols por minuto dos Top 3 de 2022 e 2023.")
+
+    # Hipótese 2: Proporção de passes certos dos Top 3 de 2022 vs 2024
+    st.subheader("Comparação: Proporção de Passes Certos (Top 3 - 2022 x 2024)")
+
+    passes_df["pass_accuracy"] = passes_df["statistics_accurate_pass"] / passes_df["statistics_total_pass"]
+
+    passes_2022 = passes_df[passes_df["ano"] == 2022].groupby("player_name")["pass_accuracy"].mean().nlargest(3)
+    passes_2024 = passes_df[passes_df["ano"] == 2024].groupby("player_name")["pass_accuracy"].mean().nlargest(3)
+
+    t_stat2, p_value2 = stats.ttest_ind(passes_2022, passes_2024, equal_var=False)
+
+    st.markdown(f"**Valor de p:** {p_value2:.4f}")
+
+    fig_box2 = px.box(passes_df[passes_df["ano"].isin([2022, 2024])],
+                      x="ano", y="pass_accuracy",
+                      title="Distribuição de Proporção de Passes Certos (2022 x 2024)")
+
+    st.plotly_chart(fig_box2)
+
+    if p_value2 < 0.05:
+        st.markdown("✅ Como o valor de p é menor que 0.05, **rejeitamos a hipótese nula**. Há evidências de que a proporção média de passes certos dos Top 3 de 2022 é diferente da de 2024.")
+    else:
+        st.markdown("⚠️ Como o valor de p é maior que 0.05, **não rejeitamos a hipótese nula**. Não há evidências de diferença significativa nas proporções de passes certos entre 2022 e 2024.")
+
+        st.markdown("""
+        ---
+        ### 📊 Testes de Hipótese
+
+        #### Comparação da média de gols por minuto (Top 3 — 2022 vs 2023)
+        - **H₀:** As médias de gols por minuto dos Top 3 jogadores de 2022 e 2023 são iguais.
+        - **H₁:** As médias são diferentes.
+
+        **Interpretação:** O boxplot exibe a variação das médias de gols por minuto por jogador. O valor de p indica se a diferença entre os anos é estatisticamente significativa:
+        - Se p < 0.05 → existe diferença significativa.
+        - Se p ≥ 0.05 → não há diferença estatística.
+
+        #### Comparação da proporção de passes certos (Top 3 — 2022 vs 2024)
+        - **H₀:** As proporções de passes certos dos Top 3 jogadores de 2022 e 2024 são iguais.
+        - **H₁:** As proporções são diferentes.
+
+        **Interpretação:** O boxplot mostra a variação da precisão de passe entre os anos. O valor de p indica a significância da diferença. Caso o p-value retorne `nan`, isso ocorre porque:
+        - As amostras têm valores idênticos ou muito próximos, sem variabilidade suficiente para o teste estatístico.
+        - Ou não há dados suficientes para calcular.
+
+        É importante revisar os dados disponíveis para validar a execução do teste corretamente.
+        """)
+
 with aba3:
     st.header("Conclusões Gerais da Análise")
     st.markdown("""
