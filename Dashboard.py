@@ -120,139 +120,125 @@ with aba2:
     st.markdown("**Passes certos por minuto jogado:**")
     st.dataframe(top_por_minuto[["player_name", "passes_certos_por_minuto"]])
 
-# NOVA SEÇÃO — Testes de Hipótese
-st.header("📊 Testes de Hipótese Estatística")
+    # NOVA SEÇÃO — Testes de Hipótese
+    st.header("📊 Testes de Hipótese Estatística")
 
-# Hipótese 1: Média de gols por minuto dos Top 3 de 2022 vs 2023
-st.subheader("Comparação: Média de Gols por Minuto (Top 3 - 2022 x 2023)")
+    # Hipótese 1: Média de gols por minuto dos Top 3 de 2022 vs 2023
+    st.subheader("Comparação: Média de Gols por Minuto (Top 3 - 2022 x 2023)")
 
-df_gpm = df[df["statistics_minutes_played"] > 0].copy()
-df_gpm["gols_por_minuto"] = df_gpm["statistics_goals"] / df_gpm["statistics_minutes_played"]
+    df_gpm = df[df["statistics_minutes_played"] > 0].copy()
+    df_gpm["gols_por_minuto"] = df_gpm["statistics_goals"] / df_gpm["statistics_minutes_played"]
 
-top_2022 = df_gpm[df_gpm["ano"] == 2022].groupby("player_name")["gols_por_minuto"].mean().nlargest(3)
-top_2023 = df_gpm[df_gpm["ano"] == 2023].groupby("player_name")["gols_por_minuto"].mean().nlargest(3)
+    top_2022 = df_gpm[df_gpm["ano"] == 2022].groupby("player_name")["gols_por_minuto"].mean().nlargest(3)
+    top_2023 = df_gpm[df_gpm["ano"] == 2023].groupby("player_name")["gols_por_minuto"].mean().nlargest(3)
 
-t_stat, p_value = stats.ttest_ind(top_2022, top_2023, equal_var=False)
+    t_stat, p_value = stats.ttest_ind(top_2022, top_2023, equal_var=False)
 
-st.markdown(f"**Valor de p:** {p_value:.4f}")
+    st.markdown(f"**Valor de p:** {p_value:.4f}")
 
-fig_box1 = px.box(df_gpm[df_gpm["ano"].isin([2022, 2023])],
-                  x="ano", y="gols_por_minuto",
-                  title="Distribuição de Gols por Minuto (2022 x 2023)")
+    fig_box1 = px.box(df_gpm[df_gpm["ano"].isin([2022, 2023])],
+                      x="ano", y="gols_por_minuto",
+                      title="Distribuição de Gols por Minuto (2022 x 2023)")
 
-st.plotly_chart(fig_box1)
+    st.plotly_chart(fig_box1)
 
-st.markdown("""
-**Teste realizado:** Teste t para duas amostras independentes (Welch’s t-test)
+    st.markdown("""
+    **Teste realizado:** Teste t para duas amostras independentes (Welch’s t-test)
 
-**Hipóteses**
-- **H₀:** As médias de gols por minuto dos Top 3 jogadores de 2022 e 2023 são iguais.
-- **H₁:** As médias são diferentes.
+    **Hipóteses**
+    - **H₀:** As médias de gols por minuto dos Top 3 jogadores de 2022 e 2023 são iguais.
+    - **H₁:** As médias são diferentes.
 
-O boxplot exibe a variação das médias de gols por minuto por jogador. O valor de p indica se a diferença entre os anos é estatisticamente significativa:
-- Se p < 0.05 → existe diferença significativa.
-- Se p ≥ 0.05 → não há diferença estatística.
+    O boxplot exibe a variação das médias de gols por minuto por jogador. O valor de p indica se a diferença entre os anos é estatisticamente significativa:
+    - Se p < 0.05 → existe diferença significativa.
+    - Se p ≥ 0.05 → não há diferença estatística.
 
-**Nível de significância adotado:** 5%.
-""")
+    **Nível de significância adotado:** 5%.
+    """)
 
-if p_value < 0.05:
-    st.markdown("✅ Como o valor de p é menor que 0.05, **rejeitamos a hipótese nula**. Há evidências de que a média de gols por minuto dos Top 3 de 2022 é diferente da de 2023.")
-else:
-    st.markdown("⚠️ Como o valor de p é maior que 0.05, **não rejeitamos a hipótese nula**. Não há evidências de diferença significativa entre as médias de gols por minuto dos Top 3 de 2022 e 2023.")
+    if p_value < 0.05:
+        st.markdown("✅ Como o valor de p é menor que 0.05, **rejeitamos a hipótese nula**. Há evidências de que a média de gols por minuto dos Top 3 de 2022 é diferente da de 2023.")
+    else:
+        st.markdown("⚠️ Como o valor de p é maior que 0.05, **não rejeitamos a hipótese nula**. Não há evidências de diferença significativa entre as médias de gols por minuto dos Top 3 de 2022 e 2023.")
 
-# Justificativa de Gestão para o Primeiro Gráfico
-st.header("Como esse resultado ajuda o Ituano?")
-st.markdown("""
-O gráfico acima compara o rendimento **individual** dos principais jogadores em termos de gols por minuto, permitindo que a comissão técnica avalie **quais perfis de atletas** têm mantido ou melhorado sua performance.
+    # Justificativa de Gestão para o Primeiro Gráfico
+    st.header("Como esse resultado ajuda o Ituano?")
+    st.markdown("""
+    O gráfico acima compara o rendimento **individual** dos principais jogadores em termos de gols por minuto, permitindo que a comissão técnica avalie **quais perfis de atletas** têm mantido ou melhorado sua performance.
 
-Essas informações ajudam o Ituano a:
-- Decidir sobre **renovações e contratações**.
-- Identificar **quem deve receber maior tempo de jogo**.
-- Reforçar o **planejamento tático** com base em jogadores mais eficientes.
+    Essas informações ajudam o Ituano a:
+    - Decidir sobre **renovações e contratações**.
+    - Identificar **quem deve receber maior tempo de jogo**.
+    - Reforçar o **planejamento tático** com base em jogadores mais eficientes.
 
-Basear essas decisões em **dados concretos** reduz o risco de decisões equivocadas por percepções subjetivas.
-""")
+    Basear essas decisões em **dados concretos** reduz o risco de decisões equivocadas por percepções subjetivas.
+    """)
 
+    # Hipótese 2: Proporção de jogos com pelo menos 1 gol em 2022 vs 2024
+    st.subheader("Comparação: Proporção de Jogos com Pelo Menos 1 Gol (2022 x 2024)")
 
-# Hipótese 2: Proporção de jogos com pelo menos 1 gol em 2022 vs 2024
-st.subheader("Comparação: Proporção de Jogos com Pelo Menos 1 Gol (2022 x 2024)")
+    df["gols_ituano"] = df.apply(lambda row: row["home_score"] if row["home_or_away"] == "Home" else row["away_score"], axis=1)
+    df["fez_gol"] = df["gols_ituano"] >= 1
 
-# Criar coluna de gols do Ituano com base em onde jogou
-df["gols_ituano"] = df.apply(lambda row: row["home_score"] if row["home_or_away"] == "Home" else row["away_score"], axis=1)
+    df_2022 = df[df["ano"] == 2022]
+    df_2024 = df[df["ano"] == 2024]
 
-# Criar coluna binária: 1 se o Ituano marcou pelo menos 1 gol, 0 caso contrário
-df["fez_gol"] = df["gols_ituano"] >= 1
+    success_2022 = df_2022["fez_gol"].sum()
+    n_2022 = df_2022.shape[0]
 
-# Filtrar anos
-df_2022 = df[df["ano"] == 2022]
-df_2024 = df[df["ano"] == 2024]
+    success_2024 = df_2024["fez_gol"].sum()
+    n_2024 = df_2024.shape[0]
 
-# Contagem de jogos com pelo menos 1 gol
-success_2022 = df_2022["fez_gol"].sum()
-n_2022 = df_2022.shape[0]
+    p1 = success_2022 / n_2022
+    p2 = success_2024 / n_2024
+    p_combined = (success_2022 + success_2024) / (n_2022 + n_2024)
 
-success_2024 = df_2024["fez_gol"].sum()
-n_2024 = df_2024.shape[0]
+    z_stat = (p1 - p2) / np.sqrt(p_combined * (1 - p_combined) * (1/n_2022 + 1/n_2024))
+    p_value_z = 2 * (1 - stats.norm.cdf(abs(z_stat)))
 
-# Proporções observadas
-p1 = success_2022 / n_2022
-p2 = success_2024 / n_2024
+    st.markdown(f"**Estatística z:** {z_stat:.4f}")
+    st.markdown(f"**Valor de p:** {p_value_z:.4f}")
 
-# Proporção combinada
-p_combined = (success_2022 + success_2024) / (n_2022 + n_2024)
+    proportion_df = pd.DataFrame({
+        'Ano': ['2022', '2024'],
+        'Proporção de Jogos com Gol': [p1, p2]
+    })
 
-# Estatística z
-z_stat = (p1 - p2) / np.sqrt(p_combined * (1 - p_combined) * (1/n_2022 + 1/n_2024))
+    fig_bar = px.bar(proportion_df, x='Ano', y='Proporção de Jogos com Gol',
+                     title='Proporção de Jogos com Pelo Menos 1 Gol (2022 x 2024)', text_auto='.2%')
 
-# p-value (teste bicaudal)
-p_value_z = 2 * (1 - stats.norm.cdf(abs(z_stat)))
+    st.plotly_chart(fig_bar)
 
-st.markdown(f"**Estatística z:** {z_stat:.4f}")
-st.markdown(f"**Valor de p:** {p_value_z:.4f}")
+    st.markdown("""
+    **Teste realizado:** Teste de Proporção para duas amostras independentes (Z para proporção)
 
-# Gráfico de barras comparando as proporções
-proportion_df = pd.DataFrame({
-    'Ano': ['2022', '2024'],
-    'Proporção de Jogos com Gol': [p1, p2]
-})
+    **Hipóteses**
+    - **H₀:** As proporções de jogos com pelo menos 1 gol em 2022 e 2024 são iguais.
+    - **H₁:** As proporções são diferentes.
 
-fig_bar = px.bar(proportion_df, x='Ano', y='Proporção de Jogos com Gol',
-                 title='Proporção de Jogos com Pelo Menos 1 Gol (2022 x 2024)', text_auto='.2%')
+    O gráfico acima mostra as proporções em cada ano. O valor de p indica a significância da diferença:
+    - Se p < 0.05 → existe diferença significativa.
+    - Se p ≥ 0.05 → não há diferença estatística.
 
-st.plotly_chart(fig_bar)
+    **Nível de significância adotado:** 5%.
+    """)
 
-st.markdown("""
-**Teste realizado:** Teste de Proporção para duas amostras independentes (Z para proporção)
+    if p_value_z < 0.05:
+        st.markdown("✅ Como o valor de p é menor que 0.05, **rejeitamos a hipótese nula**. Há evidências de que o desempenho ofensivo em termos de marcar gols mudou entre 2022 e 2024.")
+    else:
+        st.markdown("⚠️ Como o valor de p é maior que 0.05, **não rejeitamos a hipótese nula**. Não há evidências de diferença significativa no desempenho ofensivo entre 2022 e 2024.")
 
-**Hipóteses**
-- **H₀:** As proporções de jogos com pelo menos 1 gol em 2022 e 2024 são iguais.
-- **H₁:** As proporções são diferentes.
+    st.header("Como esse resultado ajuda o Ituano?")
+    st.markdown("""
+    O gráfico acima mostra a **frequência com que o Ituano consegue marcar gols por temporada**, fornecendo uma visão **coletiva do desempenho ofensivo** do time.
 
-O gráfico acima mostra as proporções em cada ano. O valor de p indica a significância da diferença:
-- Se p < 0.05 → existe diferença significativa.
-- Se p ≥ 0.05 → não há diferença estatística.
+    Essas informações ajudam o Ituano a:
+    - **Avaliar a evolução ou regressão do time** como um todo no ataque.
+    - Sustentar **decisões sobre a continuidade da comissão técnica**.
+    - Identificar a **necessidade de reforços ofensivos**.
 
-**Nível de significância adotado:** 5%.
-""")
-
-if p_value_z < 0.05:
-    st.markdown("✅ Como o valor de p é menor que 0.05, **rejeitamos a hipótese nula**. Há evidências de que o desempenho ofensivo em termos de marcar gols mudou entre 2022 e 2024.")
-else:
-    st.markdown("⚠️ Como o valor de p é maior que 0.05, **não rejeitamos a hipótese nula**. Não há evidências de diferença significativa no desempenho ofensivo entre 2022 e 2024.")
-
-# Justificativa de Gestão para o Segundo Gráfico
-st.header("Como esse resultado ajuda o Ituano?")
-st.markdown("""
-O gráfico acima mostra a **frequência com que o Ituano consegue marcar gols por temporada**, fornecendo uma visão **coletiva do desempenho ofensivo** do time.
-
-Essas informações ajudam o Ituano a:
-- **Avaliar a evolução ou regressão do time** como um todo no ataque.
-- Sustentar **decisões sobre a continuidade da comissão técnica**.
-- Identificar a **necessidade de reforços ofensivos**.
-
-Este monitoramento permite que o clube tome **decisões estratégicas mais seguras e baseadas em dados reais**, ao invés de apenas percepções ou achismos.
-""")
+    Este monitoramento permite que o clube tome **decisões estratégicas mais seguras e baseadas em dados reais**, ao invés de apenas percepções ou achismos.
+    """)
 
 
 with aba3:
