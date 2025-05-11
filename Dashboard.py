@@ -150,7 +150,7 @@ with aba2:
     - **H₀:** As médias de gols por minuto dos Top 3 jogadores de 2022 e 2023 são iguais.
     - **H₁:** As médias são diferentes.
 
-    **Interpretação:** O boxplot exibe a variação das médias de gols por minuto por jogador. O valor de p indica se a diferença entre os anos é estatisticamente significativa:
+    O boxplot exibe a variação das médias de gols por minuto por jogador. O valor de p indica se a diferença entre os anos é estatisticamente significativa:
     - Se p < 0.05 → existe diferença significativa.
     - Se p ≥ 0.05 → não há diferença estatística.
 
@@ -188,7 +188,7 @@ with aba2:
     - **H₀:** As proporções médias de passes certos dos Top 3 jogadores de 2022 e 2024 são iguais.
     - **H₁:** As proporções são diferentes.
 
-    **Interpretação:** O boxplot mostra a variação da precisão de passe entre os anos. O valor de p indica a significância da diferença:
+    O boxplot mostra a variação da precisão de passe entre os anos. O valor de p indica a significância da diferença:
     - Se p < 0.05 → existe diferença significativa.
     - Se p ≥ 0.05 → não há diferença estatística.
 
