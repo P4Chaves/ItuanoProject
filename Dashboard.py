@@ -265,13 +265,11 @@ with aba3:
             .head(3)
         )
 
-        # Cálculo do intervalo de confiança
         gols_min = top_ano["gols_por_minuto"].values
         media = np.mean(gols_min)
         intervalo = stats.t.interval(0.95, len(gols_min)-1, loc=media, scale=stats.sem(gols_min))
         amplitude = intervalo[1] - intervalo[0]
 
-        # Guarda para comparação entre os anos
         comparacoes.append({
             "ano": ano,
             "media": media,
@@ -308,6 +306,31 @@ with aba3:
         "amplitude": "{:.4f}"
     }))
 
+    # ✅ Adição: Tendência com Regressão Linear
+    st.markdown("""
+    ### 📈 Tendência de Desempenho ao Longo dos Anos (Regressão Linear)
+    Aplicamos uma regressão para observar se o desempenho dos Top 3 jogadores tem crescido ou caído ao longo dos anos.
+    """)
+
+    from sklearn.linear_model import LinearRegression
+    import numpy as np
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+
+    X = comparacoes_df[["ano"]].values
+    y = comparacoes_df["media"].values
+    model = LinearRegression().fit(X, y)
+    tendencia = model.predict(X)
+
+    fig2, ax2 = plt.subplots(figsize=(8, 5))
+    sns.boxplot(x="ano", y="gols_por_minuto", data=top_jogadores_ano, ax=ax2)
+    ax2.plot(comparacoes_df["ano"], tendencia, color='red', linestyle='--', label='Tendência Linear')
+    ax2.legend()
+    ax2.set_title('Eficiência Ofensiva por Ano e Tendência Linear')
+    st.pyplot(fig2)
+
+    st.markdown("A linha vermelha mostra a tendência geral ao longo dos anos, ajudando a comissão a planejar melhorias.")
+
     st.markdown("""
     Observa-se que anos com **menor amplitude** do intervalo (como 2022, por exemplo) indicam uma performance mais estável entre os melhores jogadores. Já amplitudes maiores sugerem que o time dependeu de um ou dois destaques bem acima da média dos demais, o que pode ser um risco de dependência excessiva.
     """)
@@ -318,12 +341,10 @@ with aba3:
     A seguir, apresentamos a projeção de gols esperados para 10 jogos completos (90 minutos) considerando os três jogadores mais eficientes de cada temporada. O gráfico mostra o intervalo inferior, a média e o intervalo superior de gols esperados.
     """)
 
-    # Cálculo para projeção de gols em 10 jogos
     comparacoes_df["gols_esperados_inferior"] = comparacoes_df["limite_inferior"] * 90 * 10
     comparacoes_df["gols_esperados_media"] = comparacoes_df["media"] * 90 * 10
     comparacoes_df["gols_esperados_superior"] = comparacoes_df["limite_superior"] * 90 * 10
 
-    # Gráfico de barras com intervalo
     import plotly.graph_objects as go
 
     fig = go.Figure()
@@ -368,21 +389,22 @@ with aba3:
     A comissão técnica pode, por exemplo, traçar metas de gols baseadas nesses números ou identificar temporadas com menor potencial ofensivo e agir no mercado de transferências para corrigir isso.
     """)
 
-    # Variação no Desempenho por Ano
+    # ✅ Adição: Variação no Desempenho incluindo 2025
     st.markdown("""
     ### 📉 Variação no Desempenho por Ano
     - **2022**: Ano de maior destaque ofensivo, com a média de gols por jogador acima das outras temporadas. Jogadores como *Rafael Elias* e *Gabriel Barros* foram grandes protagonistas.
     - **2023**: Queda visível na produtividade ofensiva, com menos jogadores se destacando e um declínio na eficiência geral.
     - **2024**: Estagnação ofensiva, com poucos jogadores mantendo uma taxa regular de gols por minuto, o que pode indicar problemas no ataque ou esquema tático.
-    
+    - **2025**: Pequena recuperação na média, mas a **amplitude ainda alta** revela que o time segue **dependendo de poucos jogadores**, o que mantém um risco estratégico.
+
     ### ⚠️ Dependência de Poucos Jogadores
     A análise revelou que em várias temporadas o Ituano dependeu de poucos jogadores para marcar a maior parte dos gols. Essa dependência é arriscada, especialmente em caso de lesões ou transferências.
-    
+
     ### 📈 Eficiência nos Passes
     A análise de passes mostrou que:
     - Alguns jogadores não só realizaram muitos passes certos como também mantiveram alta taxa de acerto.
     - Quando ponderado por tempo em campo, foi possível identificar jogadores com alta contribuição tática, garantindo a manutenção da posse de bola e organização ofensiva.
-    
+
     ### 🧠 Considerações Finais
     - Jogadores com alta taxa de **gols por minuto** e **passes certos por minuto** demonstram ser mais eficientes taticamente e tecnicamente.
     - A comissão técnica pode utilizar essas métricas para decisões mais embasadas em escalações, substituições e reforços para as próximas temporadas.
