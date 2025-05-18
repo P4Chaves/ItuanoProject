@@ -306,34 +306,53 @@ with aba3:
         "amplitude": "{:.4f}"
     }))
 
-    # ✅ Adição: Tendência com Regressão Linear
+    # ✅ Análise de Tendência com Regressão Linear Baseada nos Jogadores Individuais
     st.markdown("""
-    ### 📈 Tendência de Desempenho ao Longo dos Anos (Regressão Linear)
-    Aplicamos uma regressão para observar se o desempenho dos Top 3 jogadores tem crescido ou caído ao longo dos anos.
+    ### 📈 Tendência Geral da Eficiência Ofensiva (Regressão Linear)
+    Aplicamos uma regressão considerando **todos os jogadores que marcaram gols**, para verificar se a eficiência do elenco tem melhorado ou caído ao longo dos anos.
+
+    Essa abordagem permite:
+    - **Detectar a consistência geral do grupo**, e não apenas de poucos destaques.
+    - **Avaliar o potencial do elenco como um todo**.
+    - **Planejar ajustes de elenco** com base em dados reais e históricos.
     """)
 
+    # Preparar os dados detalhados
+    jogadores_validos = top_jogadores_ano.dropna(subset=['statistics_goals']).copy()
+    jogadores_validos["gols_por_minuto"] = jogadores_validos["statistics_goals"] / jogadores_validos["statistics_minutes_played"]
+
+    # Aplicar regressão
     from sklearn.linear_model import LinearRegression
     import numpy as np
     import matplotlib.pyplot as plt
     import seaborn as sns
 
-    X = comparacoes_df[["ano"]].values
-    y = comparacoes_df["media"].values
-    model = LinearRegression().fit(X, y)
-    tendencia = model.predict(X)
+    X_detalhado = jogadores_validos[["ano"]].values
+    y_detalhado = jogadores_validos["gols_por_minuto"].values
+    model_detalhado = LinearRegression().fit(X_detalhado, y_detalhado)
+    tendencia_detalhada = model_detalhado.predict(X_detalhado)
 
-    fig2, ax2 = plt.subplots(figsize=(8, 5))
-    sns.boxplot(x="ano", y="gols_por_minuto", data=top_jogadores_ano, ax=ax2)
-    ax2.plot(comparacoes_df["ano"], tendencia, color='red', linestyle='--', label='Tendência Linear')
-    ax2.legend()
-    ax2.set_title('Eficiência Ofensiva por Ano e Tendência Linear')
-    st.pyplot(fig2)
-
-    st.markdown("A linha vermelha mostra a tendência geral ao longo dos anos, ajudando a comissão a planejar melhorias.")
+    # Criar gráfico com boxplot e linha de tendência
+    fig3, ax3 = plt.subplots(figsize=(8, 5))
+    sns.boxplot(x="ano", y="gols_por_minuto", data=jogadores_validos, ax=ax3)
+    sns.lineplot(x=jogadores_validos["ano"], y=tendencia_detalhada, color='red', linestyle='--', label='Tendência Linear', ax=ax3)
+    ax3.set_title('Tendência Geral da Eficiência Ofensiva (Todos os Jogadores que Marcaram)')
+    ax3.legend()
+    st.pyplot(fig3)
 
     st.markdown("""
-    Observa-se que anos com **menor amplitude** do intervalo (como 2022, por exemplo) indicam uma performance mais estável entre os melhores jogadores. Já amplitudes maiores sugerem que o time dependeu de um ou dois destaques bem acima da média dos demais, o que pode ser um risco de dependência excessiva.
+    A linha vermelha no gráfico mostra a **tendência geral** de crescimento ou queda na eficiência ofensiva do Ituano. 
+    Essa visão permite que o clube **não dependa apenas da intuição ou do momento atual**, mas sim de uma **análise histórica e preditiva** para suas decisões esportivas e estratégicas.
     """)
+
+    # ✅ Interpretação dos Resultados da Regressão e Boxplot
+    st.markdown("""
+    **O que o gráfico revela:**
+    - Apesar de alguns destaques individuais em temporadas passadas, a **tendência geral é de queda ou estagnação na eficiência ofensiva**.
+    - Isso indica que o elenco, como um todo, **não tem evoluído em capacidade ofensiva**, o que pode comprometer o desempenho em campeonatos futuros.
+    - O clube deve **avaliar o desempenho coletivo**, não apenas de artilheiros isolados, e considerar **reforços, treinamentos específicos ou mudanças táticas** para reverter esse cenário.
+    """)
+
 
     # 📊 Expectativa de gols para 10 partidas
     st.markdown("""
